@@ -1,0 +1,15 @@
+{
+  "name": "breads",
+  "version": "1.0.0",
+  "description": "Express full CRUD with SSR JSX",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zeth Thomas",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2"
+  }
+}
