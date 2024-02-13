@@ -2,13 +2,22 @@ const express = require('express');
 const router = express.Router();
 const Bread = require('../models/bread');
 const render = require('../render');
+const mongoose = require('mongoose');
+
+
 
 
 // List Route
 router.get('/', (req, res) => {
-    // res.render('Index', { breads: Bread });
-    res.send(render('Index', { breads: Bread }));
-});
+    Bread.find()
+        .then(foundBreads => {
+            res.send(render('Index', {
+                breads: foundBreads,
+                title: 'Index Page'
+            }))
+        })
+})
+
 
 // New Route
 router.get('/new', (req, res) => {
@@ -17,32 +26,48 @@ router.get('/new', (req, res) => {
 });
 
 // Detail Route
-router.get('/:arrayIndex', (req, res) => {
-    if (Bread[req.params.arrayIndex]) {
-        // res.render('Show', { bread: Bread[req.params.arrayIndex], index: req.params.arrayIndex })
-        res.send(
-            render('Show', { bread: Bread[req.params.arrayIndex], index: req.params.arrayIndex })
-        );
-    } else {
-        res.status(404).send('404. Bread not found.');
+router.get('/:id', (req, res) => {
+    Bread.findById(req.params.id)
+      .then(foundBread => {
+        res.send(render('show', {
+          bread: foundBread
+        }))
+      })
+      .catch(err => {
+        res.send('404')
+      })
+  })
+
+
+// Delete Route
+router.delete('/:id', async (req, res) => {
+    try {
+        const deletedBread = await Bread.findOneAndDelete({ _id: req.params.id });
+        if (!deletedBread) {
+            return res.status(404).send("Bread not found");
+        }
+        res.status(303).redirect('/breads');
+    } catch (error) {
+        console.error("Error deleting bread:", error);
+        res.status(500).send("Internal Server Error");
     }
 });
 
-// Delete Route
-router.delete('/:arrayIndex', (req, res) => {
-    Bread.splice(req.params.arrayIndex, 1);
-    res.status(303).redirect('/breads');
-});
 
 // Create Route
 router.post('/', (req, res) => {
-    if (req.body.hasGluten === 'on') {
-        req.body.hasGluten = true;
-    } else {
-        req.body.hasGluten = false;
+    if(!req.body.image) {
+        req.body.image = undefined 
     }
-    Bread.push(req.body);
-    res.redirect('/breads');
-});
+    if(req.body.hasGluten === 'on') {
+      req.body.hasGluten = true
+    } else {
+      req.body.hasGluten = false
+    }
+    Bread.create(req.body)
+    res.redirect('/breads')
+  })
+  
+
 
 module.exports = router;
