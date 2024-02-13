@@ -1,19 +1,43 @@
-const React = require('react');
-const Default = require('./layouts/Default');
+const express = require('express');
+const app = express();
+const methodOverride = require('method-override');
+const mongoose = require('mongoose');
 
-const Index = ({ breads }) => {
-    return (
-        <Default>
-            <h2>Index page</h2>
-            <ul>
-                {breads.map((bread, index) => (
-                    <li key={bread.name}>
-                        <a href={`/breads/${index}`}>{bread.name}</a>
-                    </li>
-                ))}
-            </ul>
-        </Default>
-    );
-};
 
-module.exports = Index;
+// CONFIG
+require('dotenv').config();
+const PORT = process.env.PORT;
+const MONGO_URI= process.env.MONGO_URI;
+
+// Database connection
+mongoose
+    .connect(MONGO_URI)
+    .then(() => {
+        console.log('connected to mongo: ' + MONGO_URI);
+    })
+
+
+
+// MIDDLEWARE
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+app.use(methodOverride('_method'));
+
+
+// ROUTES
+app.get('/', (req, res) => {
+    res.send('Hello Bread. Welcome to an Awesome App');
+});
+
+// BREADS ROUTES
+app.use('/breads', require('./controllers/breads_controller'));
+
+// 404 Page
+app.get('*', (req, res) => {
+    res.status(404).send('404. Page not found.');
+});
+
+// LISTEN
+app.listen(PORT, () => {
+    console.log(`Server is running at: http://localhost:${PORT}`);
+});
