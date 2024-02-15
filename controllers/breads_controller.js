@@ -2,71 +2,85 @@ const express = require('express');
 const router = express.Router();
 const Bread = require('../models/bread');
 const render = require('../render');
-const mongoose = require('mongoose');
 
-
-
-
-// List Route
-router.get('/', (req, res) => {
-    Bread.find()
-        .then(foundBreads => {
-            res.send(render('Index', {
-                breads: foundBreads,
-                title: 'Index Page'
-            }))
-        })
-})
-
-
-// New Route
+// New Route Form
 router.get('/new', (req, res) => {
     // res.render('New');
     res.send(render('New'));
 });
 
+// Create Route
+router.post('/', (req, res) => {
+    if (req.body.hasGluten === 'on') {
+        req.body.hasGluten = true;
+    } else {
+        req.body.hasGluten = false;
+    }
+    Bread.create(req.body);
+    res.redirect('/breads');
+});
+
+// List Route
+router.get('/', (req, res) => {
+    // res.render('Index', { breads: Bread });
+    // res.send(render('Index', { breads: Bread }));
+
+    Bread.find().then((breads) => {
+        console.log(breads);
+        // res.render('Index', { breads: breads });
+        res.send(render('Index', { breads: breads }));
+    });
+});
+
 // Detail Route
 router.get('/:id', (req, res) => {
     Bread.findById(req.params.id)
-      .then(foundBread => {
-        res.send(render('show', {
-          bread: foundBread
-        }))
+        .then((bread) => {
+            // res.render('Show', { bread: bread });
+            res.send(render('Show', { bread: bread }));
+        })
+        .catch((err) => {
+            res.status(404).send('Unable to find Timmy. :(');
+        });
+});
+
+// Edit Route Form
+router.get('/:id/edit', (req, res) => {
+  Bread.findById(req.params.id)
+      .then((bread) => {
+          // res.render('Edit', { bread: bread });
+          res.send(render('Edit', { bread: bread }));
       })
-      .catch(err => {
-        res.send('404')
-      })
-  })
+      .catch((err) => {
+          res.status(404).send('Unable to find Timmy. :(');
+      });
+});
+
+// Edit Route
+router.put('/:id', (req, res) => {
+  if(req.body.hasGluten === 'on'){
+    req.body.hasGluten = true
+  } else {
+    req.body.hasGluten = false
+  }
+  Bread.findByIdAndUpdate(req.params.id, req.body, { new: true }) 
+    .then(updatedBread => {
+      console.log(updatedBread) 
+      res.redirect(`/breads/${req.params.id}`) 
+    })
+})
+
 
 
 // Delete Route
-router.delete('/:id', async (req, res) => {
-    try {
-        const deletedBread = await Bread.findOneAndDelete({ _id: req.params.id });
-        if (!deletedBread) {
-            return res.status(404).send("Bread not found");
-        }
-        res.status(303).redirect('/breads');
-    } catch (error) {
-        console.error("Error deleting bread:", error);
-        res.status(500).send("Internal Server Error");
-    }
-});
+router.delete('/:id', (req, res) => {
+  Bread.findByIdAndDelete(req.params.id) 
+    .then(deletedBread => { 
+      res.status(303).redirect('/breads')
+    })
+})
 
 
-// Create Route
-router.post('/', (req, res) => {
-    if(!req.body.image) {
-        req.body.image = undefined 
-    }
-    if(req.body.hasGluten === 'on') {
-      req.body.hasGluten = true
-    } else {
-      req.body.hasGluten = false
-    }
-    Bread.create(req.body)
-    res.redirect('/breads')
-  })
   
 
 
