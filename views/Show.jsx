@@ -11,22 +11,18 @@ const Show = ({ bread }) => {
                 {bread.hasGluten ? <span> does </span> : <span> does NOT </span>}
                 have gluten.
             </p>
-            <img src={bread.image} alt={bread.name}/>
-            <p>Baked by {bread.baker}</p>
+            <img src={bread.image} alt={bread.name} />
+            {bread.baker && <p>{bread.getBakedBy()}</p>}
+
             <li>
                 <a href='/breads'>Go home.</a>
             </li>
-            <a href={`/breads/${bread.id}/edit`}><button>Edit</button></a>
-
-          
-            <form action={`/breads/${bread.id}?_method=DELETE`} method="POST">
-                <input type='submit' value="DELETE"/>
+            <a className='button button-primary' href={`/breads/${bread.id}/edit`}>
+                Edit
+            </a>
+            <form action={`/breads/${bread.id}?_method=DELETE`} method='POST'>
+                <input type='submit' value='DELETE' />
             </form>
-    
-
-
-
-
         </Default>
     );
 };
